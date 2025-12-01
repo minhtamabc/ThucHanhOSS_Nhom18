@@ -1,0 +1,22 @@
+
+/* css mobile */
+@media screen and (max-width:899px){
+  /* gioi thieu */
+  .gioi-thieu{
+      display: grid;
+      grid-template-columns: 1fr;
+   }
+   .wrap-list-san-pham{
+      width: 100%;
+  }
+   .list-san-pham{
+      flex:1;
+      gap: 1rem;
+      overflow-x: hidden;
+  }
+  .san-pham{
+      padding: 1rem;
+      flex: 0 0 calc(50% - 1rem);
+      border-radius: 10px;
+   }
+}
