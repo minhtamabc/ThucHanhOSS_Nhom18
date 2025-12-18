@@ -142,7 +142,7 @@ class CartController extends Controller
         }
         return redirect()->route('cart.index')->with('error', 'Đã có lỗi xảy ra, vui lòng thử lại sau !');
     }
-
+    
     // Xóa sản phẩm khỏi giỏ hàng
     public function remove(Request $request,$idProduct,$idDonHang)
     {
