@@ -384,4 +384,29 @@ class AdminController extends Controller
         }
         return redirect()->route('admin.order',1)->with('error','Không cập nhật được, vui lòng thử lại sau !');
      }
+     function detailOrder(){
+        if(isset($_POST["idDonHang"])){
+            $idDonHang = $_POST["idDonHang"];
+            $data = [];
+            // danh sách order đã duyệt
+            $orders = DB::table('donhang')
+                        ->join('khachhang','khachhang.id_khach_hang','donhang.id_khach_hang')
+                        ->select('id_don_hang','fullname','tong_tien','loai_thanh_toan','dia_chi','sdt')
+                        ->where('trang_thai_don_hang','=',2)
+                        ->where('donhang.id_don_hang','=',$idDonHang)
+                        ->get();
+
+            $details = DB::table('chitietdonhang')
+                        ->join('chitietthietbi','chitietthietbi.id_chi_tiet_thiet_bi','chitietdonhang.id_chi_tiet_thiet_bi')
+                        ->select('ten','gia_ban','so_luong','tong_tien','src_anh')
+                        ->where('chitietdonhang.id_don_hang','=',$idDonHang)
+                        ->get();
+
+            $data["order"] = $orders;
+            $data["detail"] = $details;
+            $data["vanchuyen"] = true;
+            return view('admin.donhang.xacnhan')->with('data',$data);
+        }
+        return view('admin.donhang.xacnhan')->with('data',[]);
+    }
 }
