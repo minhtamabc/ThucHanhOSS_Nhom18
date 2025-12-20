@@ -462,4 +462,51 @@ class AdminController extends Controller
         $data["vanchuyen"] = 2;
         return view('admin.donhang.xacnhan')->with('data',$data);
      }
+     function exportOrderToPdf($orderInfo, $orderItems) {
+        // 1. Cấu hình để hỗ trợ tiếng Việt (UTF-8)
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans'); // Font hỗ trợ tiếng Việt 
+        $dompdf = new Dompdf($options);
+
+        $html = '
+        <div style="font-family: DejaVu Sans, sans-serif; font-size: 14px;">
+            <h2 style="text-align: center;">HÓA ĐƠN BÁN HÀNG</h2>
+            <p><strong>Mã đơn hàng:</strong> ' . $orderInfo['id_don_hang'] . '</p>
+            <p><strong>Người nhận:</strong> ' . $orderInfo['ten_nguoi_nhan'] . '</p>
+            <p><strong>Số điện thoại:</strong> ' . $orderInfo['sdt'] . '</p>
+            <p><strong>Địa chỉ:</strong> ' . $orderInfo['dia_chi'] . '</p>
+            <p><strong>Tiền thu hộ:</strong> <span style="color: red;">' . number_format($orderInfo['thu_ho']) . ' VNĐ</span></p>
+            
+            <table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead>
+                    <tr style="background-color: #f2f2f2;">
+                        <th>Tên sản phẩm</th>
+                        <th style="width: 100px; text-align: center;">Số lượng</th>
+                    </tr>
+                </thead>
+                <tbody>';
+        
+        foreach ($orderItems as $item) {
+            $html .= '
+                    <tr>
+                        <td>' . $item['ten_san_pham'] . '</td>
+                        <td style="text-align: center;">' . $item['so_luong_dat'] . '</td>
+                    </tr>';
+        }
+
+        $html .= '
+                </tbody>
+            </table>
+            <p style="text-align: right; margin-top: 20px;">Ngày tạo: ' . date("d/m/Y") . '</p>
+        </div>';
+
+        // ạo file PDF
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A6', 'portrait'); // In bill dùng khổ A6
+        $dompdf->render();
+
+        // 4. Xuất file về trình duyệt để tải về
+        $dompdf->stream("Bill_" . $orderInfo['id_don_hang'] . ".pdf", ["Attachment" => 1]);
+    }
+
 }
