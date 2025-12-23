@@ -216,4 +216,94 @@ class AdminController extends Controller
 
         return view('admin.sanpham.edit', compact('product', 'hangs', 'loais', 'spec'));
     }
+    public function updateProduct(Request $request, $id){
+        // 1. Xử lý ảnh
+        $oldProduct = DB::table('chitietthietbi')->where('id_chi_tiet_thiet_bi', $id)->first();
+        $imageName = $oldProduct->src_anh;
+
+        if($request->hasFile('anh')){
+            $file = $request->file('anh');
+            $imageName = $file->getClientOriginalName();
+            $file->move(public_path('asset/images'), $imageName); 
+        }
+
+        // 2. Update bảng chính
+        DB::table('chitietthietbi')
+            ->where('id_chi_tiet_thiet_bi', $id)
+            ->update([
+                'ten' => $request->ten,
+                'gia_ban' => $request->gia,
+                'so_luong_ton_kho' => $request->soluong,
+                'id_hang' => $request->hang,
+                'id_loai' => $request->loai,
+                'src_anh' => $imageName
+            ]);
+
+        // 3. Update bảng thông số (FULL CỘT)
+        if($request->loai == 1){
+            DB::table('thongsodienthoai')->updateOrInsert(
+                ['id_chi_tiet_thiet_bi' => $id],
+                [
+                    'ram' => $request->dt_ram,
+                    'bo_nho_trong' => $request->dt_rom,
+                    'kich_thuoc_man_hinh' => $request->dt_manhinh,
+                    'chip_set' => $request->dt_chip,
+                    'pin' => $request->dt_pin,
+                    'he_dieu_hanh' => $request->dt_os,
+                    'cong_nghe_nfc' => $request->dt_nfc,
+                    'camera_sau' => $request->dt_camsau,
+                    'camera_truoc' => $request->dt_camtruoc,
+                    'do_phan_giai_mh' => $request->dt_dophangiai,
+                    'the_sim' => $request->dt_sim,
+                    'cpu' => $request->dt_cpu
+                ]
+            );
+        }
+        elseif($request->loai == 2){
+            DB::table('thongsotainghecoday')->updateOrInsert(
+                ['id_chi_tiet_thiet_bi' => $id],
+                [
+                    'mirco' => $request->tn_micro,
+                    'cong_ket_noi' => $request->tn_ketnoi,
+                    'dieu_kien' => $request->tn_dieukhien
+                ]
+            );
+        }
+        elseif($request->loai == 3){
+            DB::table('thongsotainghekhongday')->updateOrInsert(
+                ['id_chi_tiet_thiet_bi' => $id],
+                [
+                    'micro' => $request->tn_micro,
+                    'thoi_gian_su_dung' => $request->tn_thoigian,
+                    'dieu_khien' => $request->tn_dieukhien,
+                    'cong_nghe_am_thanh' => $request->tn_amthanh
+                ]
+            );
+        }
+        elseif($request->loai == 4){
+            DB::table('thongsosacduphong')->updateOrInsert(
+                ['id_chitiet_thiet_bi' => $id],
+                [
+                    'dung_luong' => $request->sdp_dungluong,
+                    'cong_suat_sac' => $request->sdp_congsuat,
+                    'cong_sac_ra' => $request->sdp_cong_ra,
+                    'cong_sac_vao' => $request->sdp_cong_vao
+                ]
+            );
+        }
+
+        return redirect()->route('admin.product')->with('success', 'Cập nhật thành công!');
+    }
+    public function deleteProduct($id){
+        // Kiểm tra xem sản phẩm có tồn tại không
+        $check = DB::table('chitietthietbi')->where('id_chi_tiet_thiet_bi', $id)->first();
+        
+        if($check){
+            DB::table('thongsodienthoai')->where('id_chi_tiet_thiet_bi',$id)->delete();
+            DB::table('chitietthietbi')->where('id_chi_tiet_thiet_bi', $id)->delete();
+            return redirect()->back()->with('success', 'Đã xóa sản phẩm thành công!');
+        } else {
+            return redirect()->back()->with('error', 'Sản phẩm không tồn tại!');
+        }
+    }
 }
