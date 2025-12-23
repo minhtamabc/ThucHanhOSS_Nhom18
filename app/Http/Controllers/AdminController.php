@@ -306,4 +306,23 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Sản phẩm không tồn tại!');
         }
     }
+    // CHỨC NĂNG ẨN/HIỆN SẢN PHẨM
+    public function toggleProductStatus($id){
+        // Lấy trạng thái hiện tại
+        $product = DB::table('chitietthietbi')->where('id_chi_tiet_thiet_bi', $id)->first();
+
+        if($product){
+            // Đảo ngược trạng thái (1 -> 0, 0 -> 1)
+            $newStatus = $product->trang_thai == 1 ? 0 : 1;
+            
+            DB::table('chitietthietbi')
+                ->where('id_chi_tiet_thiet_bi', $id)
+                ->update(['trang_thai' => $newStatus]);
+                
+            $msg = $newStatus == 1 ? 'Đã hiển thị sản phẩm!' : 'Đã ẩn sản phẩm!';
+            return redirect()->back()->with('success', $msg);
+        }
+
+        return redirect()->back()->with('error', 'Lỗi: Không tìm thấy sản phẩm');
+    }
 }
