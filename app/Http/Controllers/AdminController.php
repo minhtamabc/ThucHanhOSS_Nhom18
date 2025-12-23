@@ -106,4 +106,114 @@ class AdminController extends Controller
 
         return view('admin.sanpham.sanpham', compact('products', 'categories'));
     }
+
+     // 2. Hiển thị Form thêm sản phẩm
+     function createProduct(){
+        $hangs = DB::table('hang')->get(); 
+        $loais = DB::table('loaisanpham')->get();
+        return view('admin.sanpham.create', compact('hangs', 'loais'));
+    }
+
+    
+    // 3. Xử lý lưu sản phẩm vào Database
+    function storeProduct(Request $request){
+        $id = Str::random(10); 
+        
+        // 1. Xử lý ảnh
+        if($request->hasFile('anh')){
+            $file = $request->file('anh');
+            $imageName = $file->getClientOriginalName();
+            $file->move(public_path('asset/images'), $imageName);
+        }
+
+        // 2. Lưu thông tin chung
+        DB::table('chitietthietbi')->insert([
+            'id_chi_tiet_thiet_bi' => $id,
+            'ten' => $request->ten,
+            'gia_ban' => $request->gia,
+            'so_luong_ton_kho' => $request->soluong,
+            'id_hang' => $request->hang,
+            'id_loai' => $request->loai,
+            'nam_phat_hang' => $request->nam,
+            'src_anh' => $imageName
+        ]);
+
+        // 3. Lưu thông số kỹ thuật (FULL CỘT)
+        
+        // ID 1: Điện thoại (Bảng thongsodienthoai)
+        if($request->loai == 1){
+            DB::table('thongsodienthoai')->insert([
+                'id_chi_tiet_thiet_bi' => $id,
+                'ram' => $request->dt_ram,
+                'bo_nho_trong' => $request->dt_rom,
+                'kich_thuoc_man_hinh' => $request->dt_manhinh,
+                'chip_set' => $request->dt_chip,
+                'pin' => $request->dt_pin,
+                'he_dieu_hanh' => $request->dt_os,          // Mới thêm
+                'cong_nghe_nfc' => $request->dt_nfc,         // Mới thêm
+                'camera_sau' => $request->dt_camsau,         // Mới thêm
+                'camera_truoc' => $request->dt_camtruoc,     // Mới thêm
+                'do_phan_giai_mh' => $request->dt_dophangiai,// Mới thêm
+                'the_sim' => $request->dt_sim,               // Mới thêm
+                'cpu' => $request->dt_cpu                    // Mới thêm
+            ]);
+        }
+        // ID 2: Tai nghe có dây (Bảng thongsotainghecoday)
+        elseif($request->loai == 2){
+            DB::table('thongsotainghecoday')->insert([
+                'id_chi_tiet_thiet_bi' => $id,
+                'mirco' => $request->tn_micro,        // Lưu ý: DB bạn ghi là 'mirco'
+                'cong_ket_noi' => $request->tn_ketnoi,
+                'dieu_kien' => $request->tn_dieukhien // Mới thêm (DB ghi là dieu_kien)
+            ]);
+        }
+        // ID 3: Tai nghe không dây (Bảng thongsotainghekhongday)
+        elseif($request->loai == 3){
+            DB::table('thongsotainghekhongday')->insert([
+                'id_chi_tiet_thiet_bi' => $id,
+                'micro' => $request->tn_micro,
+                'thoi_gian_su_dung' => $request->tn_thoigian,
+                'dieu_khien' => $request->tn_dieukhien,      // Mới thêm
+                'cong_nghe_am_thanh' => $request->tn_amthanh // Mới thêm
+            ]);
+        }
+        // ID 4: Sạc dự phòng (Bảng thongsosacduphong)
+        elseif($request->loai == 4){
+            DB::table('thongsosacduphong')->insert([
+                'id_chitiet_thiet_bi' => $id,
+                'dung_luong' => $request->sdp_dungluong,
+                'cong_suat_sac' => $request->sdp_congsuat,
+                'cong_sac_ra' => $request->sdp_cong_ra,      // Mới thêm
+                'cong_sac_vao' => $request->sdp_cong_vao     // Mới thêm
+            ]);
+        }
+
+        return redirect()->route('admin.product')->with('success', 'Thêm sản phẩm thành công!');
+    }
+
+    
+    public function editProduct($id){
+        // Lấy thông tin cơ bản
+        $product = DB::table('chitietthietbi')->where('id_chi_tiet_thiet_bi', $id)->first();
+        if(!$product) return redirect()->route('admin.product')->with('error', 'Không tìm thấy SP');
+
+        $hangs = DB::table('hang')->get();
+        $loais = DB::table('loaisanpham')->get();
+
+        // Lấy thông số kỹ thuật riêng (tương tự như lúc hiển thị danh sách)
+        $spec = null;
+        // Tìm tên bảng thông số dựa vào loại sản phẩm
+        $loaiInfo = DB::table('loaisanpham')->where('id_loai_sp', $product->id_loai)->first();
+        
+        if($loaiInfo && $loaiInfo->tenbangthongso){
+            // Chú ý: Bảng sạc dự phòng tên cột ID hơi khác, cần xử lý khéo
+            $colName = ($product->id_loai == 4) ? 'id_chitiet_thiet_bi' : 'id_chi_tiet_thiet_bi';
+            
+            $spec = DB::table($loaiInfo->tenbangthongso)
+                      ->where($colName, $id)
+                      ->first();
+        }
+
+        return view('admin.sanpham.edit', compact('product', 'hangs', 'loais', 'spec'));
+    }
 }
