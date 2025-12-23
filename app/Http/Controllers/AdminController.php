@@ -58,4 +58,52 @@ class AdminController extends Controller
         session()->flush();
         return redirect('/trang-chu/login')->with('success', 'Đăng xuất thành công!');
     }
+
+    // Quản lý sản phẩm (Có lọc và hiển thị thông số)
+    function productManagement(Request $request){
+        // 1. Lấy danh sách loại để làm bộ lọc
+        $categories = DB::table('loaisanpham')->get();
+
+        // 2. Query cơ bản lấy thông tin chung
+        $query = DB::table('chitietthietbi')
+                    ->join('hang', 'chitietthietbi.id_hang', '=', 'hang.id_hang')
+                    ->join('loaisanpham', 'chitietthietbi.id_loai', '=', 'loaisanpham.id_loai_sp')
+                    ->select(
+                        'chitietthietbi.*', 
+                        'hang.ten_hang', 
+                        'loaisanpham.ten_loai_sp', 
+                        'loaisanpham.tenbangthongso',
+                        'loaisanpham.id_loai_sp'
+                    )
+                    ->orderBy('nam_phat_hang', 'desc');
+
+        // 3. Xử lý bộ lọc
+        if($request->has('category') && $request->category != 'all'){
+            $query->where('chitietthietbi.id_loai', $request->category);
+        }
+
+        $products = $query->paginate(10);
+
+        // 4. Vòng lặp lấy thông số chi tiết cho từng sản phẩm
+        foreach($products as $product){
+            if(!empty($product->tenbangthongso)){
+                // XỬ LÝ KHÁC BIỆT TÊN CỘT ID
+                // Bảng sạc dự phòng dùng 'id_chitiet_thiet_bi', các bảng khác dùng 'id_chi_tiet_thiet_bi'
+                $foreignKey = ($product->id_loai_sp == 4) ? 'id_chitiet_thiet_bi' : 'id_chi_tiet_thiet_bi';
+
+                // Lấy dòng thông số
+                $spec = DB::table($product->tenbangthongso)
+                          ->where($foreignKey, $product->id_chi_tiet_thiet_bi)
+                          ->first();
+                
+                $product->thong_so = $spec;
+            } else {
+                $product->thong_so = null;
+            }
+        }
+
+        $products->appends(['category' => $request->category]);
+
+        return view('admin.sanpham.sanpham', compact('products', 'categories'));
+    }
 }
