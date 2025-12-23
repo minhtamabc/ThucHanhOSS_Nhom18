@@ -153,7 +153,49 @@ class OrderController extends Controller
         }
         return redirect()->route('order.index')->with('error','Đã có lỗi xảy ra, vui lòng thử lại sau !');
     }
+ public function vnpayReturn(){
+       if(isset($_GET["vnp_TxnRef"]) && isset($_GET["vnp_ResponseCode"])){
+            $idDonHang = $_GET["vnp_TxnRef"];
 
+             // lấy lại session
+            $user = DB::table('khachhang')
+                        ->join('donhang','khachhang.id_khach_hang','donhang.id_khach_hang')
+                        ->select('khachhang.id_khach_hang','username','fullname')
+                        ->where('donhang.id_don_hang','=',$idDonHang)
+                        ->get();
+                        
+            if(count($user) > 0){
+                session(['user_id' => $user[0]->id_khach_hang]);
+                session(['user_name' => $user[0]->fullname]);
+                session(['user_email' => $user[0]->username]);
+
+                $state = $_GET["vnp_ResponseCode"];
+                if($state == "00"){
+                    $total = ((int) $_GET["vnp_Amount"])/100;
+
+                    $data = DB::table('trangthaithanhtoan')
+                        ->insert([
+                            'id_don_hang' => $idDonHang,
+                            'trang_thai_thanh_toan' => 1 
+                        ]);
+                    $data = DB::table('donhang')
+                        ->where('id_don_hang','=',$idDonHang)
+                        ->update([
+                            'trang_thai_don_hang' => 1
+                        ]);
+
+                    if($data > 0) 
+                        return redirect()->route('order.index')->with('success','Đơn hàng đã được đặt thành công !'); 
+                }
+                else if($state == "24")
+                    return redirect()->route('cart.index')->with('error','Bạn đã hủy giao dịch !'); 
+                
+            } 
+       }
+        return redirect()->route('cart.index')->with('error','Đã có lỗi trong lúc giao dịch');
+    }
+
+    
     function myHistory(){
         if(session('user_id')){
             $data = [];
