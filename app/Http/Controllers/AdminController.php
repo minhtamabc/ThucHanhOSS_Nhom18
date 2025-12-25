@@ -378,4 +378,32 @@ class AdminController extends Controller
         }
         return view('admin.donhang.xacnhan')->with('data',[]);
     }
+    function confirmStep2(Request $request){
+        $idDonHang = $request->input('idDonHang');
+        if($idDonHang){
+            $data = DB::table('donhang')
+                        ->where('id_don_hang','=',$idDonHang)
+                        ->update([
+                            'trang_thai_don_hang' => 2
+                        ]);
+            if($data > 0)  
+                return redirect()->route('admin.order',2)->with('success','Đã chuyển đơn hàng sang trạng thái đã duyệt !');
+        }
+        return redirect()->route('admin.order',1)->with('error','Không cập nhật được, vui lòng thử lại sau !');
+     }
+     function huyDonByAdmin(){
+        if(isset($_POST["idDonHang"])){
+            $idDonHang = $_POST["idDonHang"];
+
+            $data = DB::table('donhang')
+                        ->where('id_don_hang','=',$idDonHang)
+                        ->update([
+                            'trang_thai_don_hang' => 4
+                        ]);
+
+            if($data > 0)
+                return redirect()->route('admin.order',5)->with('success','Đơn hàng đã hủy !');
+        }
+        return redirect()->route('admin.order',3)->with('error','Không cập nhật được, vui lòng thử lại sau !');
+     }
 }
