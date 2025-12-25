@@ -118,6 +118,16 @@ class CartController extends Controller
         return redirect()->route('cart.index')->with('error', 'Đã có lỗi xảy ra, vui lòng thử lại sau !');
     }
 
+   public function countCart($idKhachHang){
+        $data = DB::table('donhang')
+                    ->join('chitietdonhang','donhang.id_don_hang','chitietdonhang.id_don_hang')
+                    ->select('chitietdonhang.id_don_hang')
+                    ->where('donhang.id_khach_hang','=',$idKhachHang)
+                    ->where('trang_thai_don_hang','=',6)
+                    ->get();
+        return count($data);
+    }
+
     // Cập nhật số lượng
     public function update(Request $request, $idProduct,$idDonHang)
     {
@@ -140,13 +150,17 @@ class CartController extends Controller
         }
         return redirect()->route('cart.index')->with('error', 'Đã có lỗi xảy ra, vui lòng thử lại sau !');
     }
-   public function countCart($idKhachHang){
-        $data = DB::table('donhang')
-                    ->join('chitietdonhang','donhang.id_don_hang','chitietdonhang.id_don_hang')
-                    ->select('chitietdonhang.id_don_hang')
-                    ->where('donhang.id_khach_hang','=',$idKhachHang)
-                    ->where('trang_thai_don_hang','=',6)
-                    ->get();
-        return count($data);
+
+    // Xóa sản phẩm khỏi giỏ hàng
+    public function remove(Request $request,$idProduct,$idDonHang)
+    {
+        $state = DB::table('chitietdonhang')
+                    ->where('id_don_hang','=',$idDonHang)
+                    ->where('id_chi_tiet_thiet_bi','=',$idProduct)
+                    ->delete();
+        if($state)
+            return redirect()->route('cart.index')->with('success', 'Đã xóa sản phẩm khỏi giỏ hàng!');
+        else
+            return redirect()->route('cart.index')->with('error', 'Đã có lỗi xảy ra, vui lòng thử lại sau !');
     }
 }
