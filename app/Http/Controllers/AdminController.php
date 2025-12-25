@@ -339,7 +339,7 @@ class AdminController extends Controller
             $orders = DB::table('donhang')
                         ->join('khachhang','khachhang.id_khach_hang','donhang.id_khach_hang')
                         ->select('id_don_hang','fullname','tong_tien','loai_thanh_toan','trang_thai_don_hang','ngay_giao')
-                        ->whereIn('trang_thai_don_hang',[8])
+                        ->whereIn('trang_thai_don_hang',[8,5])
                         ->get();
         }
         
@@ -443,5 +443,43 @@ class AdminController extends Controller
                 return redirect()->route('admin.order',3)->with('success','Đã chuyển đơn hàng sang trạng thái vận chuyển !');
         }
         return redirect()->route('admin.order',2)->with('error','Không cập nhật được, vui lòng thử lại sau !');
+     }
+     function confirmFinish(){
+        if(isset($_POST["idDonHang"])){
+            $idDonHang = $_POST["idDonHang"];
+            // danh sách order đã duyệt
+            $data = DB::table('donhang')
+                        ->where('id_don_hang','=',$idDonHang)
+                        ->update([
+                            'trang_thai_don_hang' => 5,
+                            'ngay_giao' => date("Y-m-d H:i:s")
+                        ]);
+            if($data > 0)
+                return redirect()->route('admin.order',5)->with('success','Đơn hàng đã hoàn thành !');
+        }
+        return redirect()->route('admin.order',3)->with('error','Không cập nhật được, vui lòng thử lại sau !');
+     }
+     function detail($idDonHang){;
+        $data = [];
+        // danh sách order đã duyệt
+        $orders = DB::table('donhang')
+                    ->join('khachhang','khachhang.id_khach_hang','donhang.id_khach_hang')
+                    ->select('id_don_hang','fullname','tong_tien','loai_thanh_toan','dia_chi','sdt','ngay_giao')
+                    ->whereIn('trang_thai_don_hang',[5,8])
+                    ->where('donhang.id_don_hang','=',$idDonHang)
+                    ->get();
+
+        $details = DB::table('chitietdonhang')
+                    ->join('chitietthietbi','chitietthietbi.id_chi_tiet_thiet_bi','chitietdonhang.id_chi_tiet_thiet_bi')
+                    ->select('ten','gia_ban','so_luong','tong_tien','src_anh')
+                    ->where('chitietdonhang.id_don_hang','=',$idDonHang)
+                    ->get();
+                    
+        if(count($orders) < 1 )
+            return  redirect()->route('admin.order',5)->with('error','Không thẻ xem chi tiết, vui lòng thử lại sau !');
+        $data["order"] = $orders;
+        $data["detail"] = $details;
+        $data["vanchuyen"] = 2;
+        return view('admin.donhang.xacnhan')->with('data',$data);
      }
 }

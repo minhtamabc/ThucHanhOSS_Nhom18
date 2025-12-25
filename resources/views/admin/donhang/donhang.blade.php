@@ -202,14 +202,18 @@
                         <th></th>
                     </tr>
                     @foreach($data["finish"] as $item)
-                            @if($item->trang_thai_don_hang == 8)
                             <tr>
                                 <td>{{ $item->id_don_hang }}</td>
                                 <td>{{ $item->fullname }}</td>
                                 <td>{{ number_format($item->tong_tien*1000,0,'.','.') }}đ</td>
                                 <td>{{ ($item->loai_thanh_toan == 1) ? "Thanh toán khi nhận hàng" : "BANKING (đã thanh toán)"}}</td>
                                 <td>{{ ($item->loai_thanh_toan == 1) ? number_format($item->tong_tien*1000,0,'.','.')."đ": "0đ"}}</td>
-                                <td>{{ $item->ngay_giao }}</td>
+                                @if($item->trang_thai_don_hang == 8)
+                                     <td>{{ $item->ngay_giao }}</td>
+                                @else
+                                    <td>Chờ khách duyệt đã nhận đơn !</td>
+                                @endif
+                               
                                 <td>
                                     <form action="{{ route('admin.detail', $item->id_don_hang) }}" method="get">
                                         @csrf
@@ -217,7 +221,6 @@
                                     </form>
                                 </td>
                             </tr>
-                            @endif
                     @endforeach
                 </table>
             @else
