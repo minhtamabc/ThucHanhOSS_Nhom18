@@ -2,6 +2,8 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 
 
 // Trang chủ
@@ -90,3 +92,5 @@ Route::middleware(['check.login'])->group(function () {
         Route::put('/my-history/order',[OrderController::class,'daNhanDuocHang'])->name('order.confirm');
     });
 });
+Route::get('/fakeLogin',[GoogleAuthController::class, 'fakeLogin']);
+Route::get('/fakeLogin2',[GoogleAuthController::class, 'fakeLogin2']);
