@@ -31,8 +31,8 @@ class OrderController extends Controller
                 return redirect()->route('cart.index')->with('error','Chưa có địa chỉ hoặc số điện thoại');
 
             // bug chua test sdt
-            // if(!preg_match("/^0[0-9]{9}$/",trim($_POST["sdt"])))
-            //     return redirect()->route('cart.index')->with('error','Sai định dạng số điện thoại !');
+             if(!preg_match("/^0[0-9]{9}$/",trim($_POST["sdt"])))
+                 return redirect()->route('cart.index')->with('error','Sai định dạng số điện thoại !');
 
             $t = DB::table('khachhang')
                 ->where('id_khach_hang','=',session('user_id'))
@@ -62,5 +62,25 @@ class OrderController extends Controller
         }
         return redirect()->route('order.index')->with('error','Đã có lỗi xảy ra, vui lòng thử lại sau !');
     }
-    //9704198526191432198
+    function huyDon(Request $request){
+        $data = DB::table('donhang')
+                    ->where('id_don_hang','=',$request->input('idDonHang'))
+                    ->update([
+                        'trang_thai_don_hang' => 7
+                    ]);
+        if($data > 0)
+            return redirect()->route('order.history')->with('success','Đã hủy đơn hàng !');
+        return redirect()->route('order.history')->with('error','Đã có lỗi xảy ra, vui lòng thử lại sau !');
+    }
+
+    function daNhanDuocHang(Request $request){
+        $data = DB::table('donhang')
+                    ->where('id_don_hang','=',$request->input('idDonHang'))
+                    ->update([
+                        'trang_thai_don_hang' => 8
+                    ]);
+        if($data > 0)
+            return redirect()->route('order.history')->with('success','Cảm ơn đã phản hồi đơn hàng !');
+        return redirect()->route('order.history')->with('error','Đã có lỗi xảy ra, vui lòng thử lại sau !');
+    }
 }
