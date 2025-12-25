@@ -163,4 +163,21 @@ class CartController extends Controller
         else
             return redirect()->route('cart.index')->with('error', 'Đã có lỗi xảy ra, vui lòng thử lại sau !');
     }
+    
+    // Xóa toàn bộ giỏ hàng
+    public function clear($idDonHang)
+    {
+        $state = DB::table('chitietdonhang')
+                    ->where('id_don_hang','=',$idDonHang)
+                    ->delete();
+
+        $state = DB::table('donhang')
+                    ->where('id_don_hang','=',$idDonHang)
+                    ->delete();
+        if($state)
+            return redirect()->route('cart.index')->with('success', 'Đã xóa toàn bộ giỏ hàng!');
+        else
+            return redirect()->route('cart.index')->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau !');
+    }
+
 }
