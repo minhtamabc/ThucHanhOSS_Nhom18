@@ -325,4 +325,32 @@ class AdminController extends Controller
 
         return redirect()->back()->with('error', 'Lỗi: Không tìm thấy sản phẩm');
     }
+    function orderManagement($trangThai=1){
+        $data = [];
+        if($trangThai != 5){
+            // danh sách order
+            $orders = DB::table('donhang')
+                        ->join('khachhang','khachhang.id_khach_hang','donhang.id_khach_hang')
+                        ->select('id_don_hang','fullname','tong_tien','loai_thanh_toan','trang_thai_don_hang','ngay_giao')
+                        ->where('trang_thai_don_hang','=',$trangThai)
+                        ->get();
+        }
+        else if($trangThai == 5){
+            $orders = DB::table('donhang')
+                        ->join('khachhang','khachhang.id_khach_hang','donhang.id_khach_hang')
+                        ->select('id_don_hang','fullname','tong_tien','loai_thanh_toan','trang_thai_don_hang','ngay_giao')
+                        ->whereIn('trang_thai_don_hang',[8])
+                        ->get();
+        }
+        
+        if($trangThai == 2)
+            $data["confirm"] = $orders;
+        else if($trangThai == 3)
+            $data["delivery"] = $orders;
+        else if($trangThai == 5)
+            $data["finish"] = $orders;
+        else
+            $data["orders"] = $orders;
+        return view('admin.donhang.donhang')->with('data',$data);
+    }
 }
