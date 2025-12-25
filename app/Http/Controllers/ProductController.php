@@ -52,8 +52,8 @@ class ProductController extends Controller
                       ->where('id_chi_tiet_thiet_bi','=',$id)
                       ->get();
         // fix bug            
-        // if(!count($chiTietThietBi))
-        //   return redirect()->route('home');
+        if(!count($chiTietThietBi))
+          return redirect()->route('home');
         
         //lấy tên bảng thong số tương ứng
         $bangThongSo = DB::table('loaisanpham')
