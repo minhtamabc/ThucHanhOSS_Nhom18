@@ -66,7 +66,5 @@ class GoogleAuthController extends Controller
         session()->flush();
         return redirect('/login')->with('success', 'Đăng xuất thành công!');
     }
-    function fakeLogin(){
-        session(['user_id' => 'KHkWnGvI7e']);
-    }
+    
 }
