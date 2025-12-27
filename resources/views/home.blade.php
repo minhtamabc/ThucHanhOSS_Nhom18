@@ -12,6 +12,7 @@
 </head>
 <body>
     <!-- header sẽ cố định với tablet và pc còn phone sẽ thành thanh menu -->
+     <h1>Nguyễn Minh Tâm</h1>
     <header>
         <div class="wrap-menu-header">
             <nav class="tim-kiem-dang-nhap-gio-hang d-flex">
