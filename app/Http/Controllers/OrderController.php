@@ -32,8 +32,8 @@ class OrderController extends Controller
                     ->where('donhang.id_don_hang','=',$idDonHang)
                     ->get();
         // bug xem chi tiet lich su
-        // if(count($donHang) < 1)
-        //     return redirect()->route('order.index')->with('error','Đã có lỗi xảy ra, vui lòng thủ lại sau !');
+        if(count($donHang) < 1)
+            return redirect()->route('order.index')->with('error','Đã có lỗi xảy ra, vui lòng thủ lại sau !');
 
         $chitiet =  DB::table('donhang')
                     ->join('chitietdonhang','donhang.id_don_hang','chitietdonhang.id_don_hang')
