@@ -33,7 +33,7 @@ class OrderController extends Controller
                     ->get();
         // bug xem chi tiet lich su
         if(count($donHang) < 1)
-            return redirect()->route('order.index')->with('error','Đã có lỗi xảy ra, vui lòng thủ lại sau !');
+            return redirect()->route('order.history');
 
         $chitiet =  DB::table('donhang')
                     ->join('chitietdonhang','donhang.id_don_hang','chitietdonhang.id_don_hang')
